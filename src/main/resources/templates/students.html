@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f5fb;
+            color: #243047;
+        }
+
+        header {
+            background: linear-gradient(135deg, #263b80, #526ac4);
+            color: white;
+            padding: 28px 8%;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+        }
+
+        header p {
+            margin: 0;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 18px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccd3e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: 2px solid #8da4ff;
+            border-color: #526ac4;
+        }
+
+        button, .edit, .delete {
+            display: inline-block;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button {
+            background: #263b80;
+            margin-top: 18px;
+        }
+
+        button:hover {
+            background: #4058a8;
+        }
+
+        .edit {
+            background: #13855c;
+        }
+
+        .delete {
+            background: #c53b46;
+        }
+
+        .message {
+            background: #e0f7e9;
+            color: #17663a;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 13px;
+            border-bottom: 1px solid #e5e9f1;
+        }
+
+        th {
+            background: #eef1fa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #68738a;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Student Management System</h1>
+    <p>Add, view, update and manage student records easily.</p>
+</header>
+
+<main>
+
+    <p class="message"
+       th:if="${message}"
+       th:text="${message}">
+    </p>
+
+    <section class="card">
+        <h2 th:text="${editMode == true} ? 'Edit Student' : 'Add New Student'">
+            Add New Student
+        </h2>
+
+        <form th:action="@{/students/save}"
+              th:object="${student}"
+              method="post">
+
+            <input type="hidden" th:field="*{id}">
+
+            <div class="form-grid">
+
+                <div>
+                    <label for="name">Full Name</label>
+                    <input id="name"
+                           type="text"
+                           th:field="*{name}"
+                           placeholder="Enter student name"
+                           required>
+                </div>
+
+                <div>
+                    <label for="email">Email Address</label>
+                    <input id="email"
+                           type="email"
+                           th:field="*{email}"
+                           placeholder="Enter email"
+                           required>
+                </div>
+
+                <div>
+                    <label for="course">Course</label>
+                    <input id="course"
+                           type="text"
+                           th:field="*{course}"
+                           placeholder="Enter course"
+                           required>
+                </div>
+
+                <div>
+                    <label for="age">Age</label>
+                    <input id="age"
+                           type="number"
+                           min="1"
+                           max="120"
+                           th:field="*{age}"
+                           placeholder="Enter age"
+                           required>
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    th:text="${editMode == true} ? 'Update Student' : 'Add Student'">
+                Add Student
+            </button>
+
+            <a th:if="${editMode == true}"
+               th:href="@{/}">
+                Cancel
+            </a>
+
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Student Records</h2>
+
+        <p th:if="${#lists.isEmpty(students)}">
+            No students added yet. Add your first student above!
+        </p>
+
+        <div class="table-wrap"
+             th:unless="${#lists.isEmpty(students)}">
+
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>Age</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="s : ${students}">
+                    <td th:text="${s.id}"></td>
+                    <td th:text="${s.name}"></td>
+                    <td th:text="${s.email}"></td>
+                    <td th:text="${s.course}"></td>
+                    <td th:text="${s.age}"></td>
+
+                    <td>
+                        <div class="actions">
+
+                            <a class="edit"
+                               th:href="@{/students/edit/{id}(id=${s.id})}">
+                                Edit
+                            </a>
+
+                            <a class="delete"
+                               th:href="@{/students/delete/{id}(id=${s.id})}"
+                               onclick="return confirm('Are you sure you want to delete this student?')">
+                                Delete
+                            </a>
+
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    Student Management System | Spring Boot | Thymeleaf | H2 Database
+</footer>
+
+</body>
+</html>
